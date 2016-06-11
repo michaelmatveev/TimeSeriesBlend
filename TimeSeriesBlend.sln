@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSeriesBlend.Core", "TimeSeriesBlend.Core\TimeSeriesBlend.Core.csproj", "{9EF99676-7831-4137-BB0A-06229A534435}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TimeSeriesBlend.UnitTests", "TimeSeriesBlend.UnitTests\TimeSeriesBlend.UnitTests.csproj", "{44DAA83F-51D6-45A7-A39A-2822DC0C6222}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EF99676-7831-4137-BB0A-06229A534435}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EF99676-7831-4137-BB0A-06229A534435}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EF99676-7831-4137-BB0A-06229A534435}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EF99676-7831-4137-BB0A-06229A534435}.Release|Any CPU.Build.0 = Release|Any CPU
+		{44DAA83F-51D6-45A7-A39A-2822DC0C6222}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{44DAA83F-51D6-45A7-A39A-2822DC0C6222}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{44DAA83F-51D6-45A7-A39A-2822DC0C6222}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{44DAA83F-51D6-45A7-A39A-2822DC0C6222}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
