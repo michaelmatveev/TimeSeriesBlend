@@ -41,6 +41,7 @@
   <ItemGroup>
     <Compile Include="ComputationParameters.cs" />
     <Compile Include="ExpressionsBuilder.cs" />
+    <Compile Include="ExpressionUtil.cs" />
     <Compile Include="Grammar\IDefineGroup.cs" />
     <Compile Include="Grammar\IDefinePeriod.cs" />
     <Compile Include="Grammar\IPeriodVariableAssigment.cs" />
@@ -52,9 +53,11 @@
     <Compile Include="MetaVariables\ShiftedVaraible.cs" />
     <Compile Include="MetaVariables\CrossGroupVariable.cs" />
     <Compile Include="MetaVariables\SlicedVariable.cs" />
+    <Compile Include="Operator.cs" />
     <Compile Include="Periods\ConstantPeriod.cs" />
     <Compile Include="PropertyFinderVisitor.cs" />
     <Compile Include="SeriesConnector.cs" />
+    <Compile Include="SeriesConnectorTypeDefs.cs" />
     <Compile Include="StandardPeriods.cs" />
     <Compile Include="Periods\CalculationPeriod.cs" />
     <Compile Include="GroupOfVariables.cs" />

@@ -6,17 +6,17 @@ using TimeSeriesBlend.Core.Periods;
 
 namespace TimeSeriesBlend.Core.MetaVariables
 {
-    internal class CalculatedVariable<H, T> : MetaVariable<H>
+    internal class CalculatedVariable<H, T, I> : MetaVariable<H, I>
     {
         /// <summary>
         /// Сохраненные результаты вычислений данной переменной на каждый период
         /// Заполняется по мере проведения вычислений в методе Evaluate
         /// </summary>
         /// <returns></returns>
-        public Dictionary<TimeArg, T> Results { get; private set; }
+        public Dictionary<TimeArg<I>, T> Results { get; private set; }
 
-        public Expression<Func<TimeArg, T>> Writer { get; set; }
-        public Func<TimeArg, T> CompiledWriter { get; set; }
+        public Expression<Func<TimeArg<I>, T>> Writer { get; set; }
+        public Func<TimeArg<I>, T> CompiledWriter { get; set; }
 
         protected Action<H, T> CompiledPropertySetter { get; set; }
 
@@ -24,7 +24,7 @@ namespace TimeSeriesBlend.Core.MetaVariables
 
         public CalculatedVariable()
         {
-            Results = new Dictionary<TimeArg, T>(TimeArgsComparer.Instance);
+            Results = new Dictionary<TimeArg<I>, T>(TimeArgsComparer<I>.Instance);
         }
 
         protected override void ValidateVariable()
@@ -40,7 +40,7 @@ namespace TimeSeriesBlend.Core.MetaVariables
             }
         }
 
-        protected override void FindDependentVariables(IEnumerable<MetaVariable<H>> allVariables)
+        protected override void FindDependentVariables(IEnumerable<MetaVariable<H, I>> allVariables)
         {
             visitor.DependedProperties.Clear();
             visitor.Visit(Writer.Body);
@@ -68,17 +68,17 @@ namespace TimeSeriesBlend.Core.MetaVariables
         public override void EvaluateInternal(H holder, MemberInfo groupKey)
         {
             // вычисляем все переменные, от которой зависит данная переменная
-            foreach (MetaVariable<H> vd in DependsOn)
+            foreach (MetaVariable<H, I> vd in DependsOn)
             {
                 vd.Evaluate(holder, groupKey, LastMoniker);
             }
 
             // для каждого периода времени вычисляем значение переменной
-            foreach (var tp in Period.Periods.Select((t, i) => new TimeArg(t, i, groupKey, Period.Name, this.Name)))
+            foreach (var tp in Period.Periods.Select((t, i) => new TimeArg<I>(t, i, groupKey, Period.Name, this.Name)))
             {
                 T result;
                 // выставляем в holder значения мета-переменных от которых зависит данная переменная
-                foreach (MetaVariable<H> vd in DependsOn)
+                foreach (MetaVariable<H, I> vd in DependsOn)
                 {
                     vd.ApplyValueForHolder(holder, tp);
                 }
@@ -95,10 +95,10 @@ namespace TimeSeriesBlend.Core.MetaVariables
             }
         }
 
-        public override void ApplyValueForHolder(H holder, TimeArg tp)
+        public override void ApplyValueForHolder(H holder, TimeArg<I> tp)
         {
             T result;
-            if (this.Period is ConstantPeriod)
+            if (this.Period is ConstantPeriod<I>)
             {
                 result = Results.Values.Single();
             }

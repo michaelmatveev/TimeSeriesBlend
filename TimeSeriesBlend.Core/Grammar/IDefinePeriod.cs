@@ -2,20 +2,20 @@
 
 namespace TimeSeriesBlend.Core.Grammar
 {
-    public interface IDefinePeriod
+    public interface IDefinePeriod<I>
     {
-        IPeriodVariables BeginPeriod(Func<DateTime, DateTime> getNextPeriod);
-        IPeriodVariables BeginPeriod(string caption, Func<DateTime, DateTime> getNextPeriod);
-        IPeriodVariables InPeriod(string caption);
-        IPeriodVariables InConstants();      
+        IPeriodVariables<I> BeginPeriod(Func<I, I> getNextPeriod);
+        IPeriodVariables<I> BeginPeriod(string caption, Func<I, I> getNextPeriod);
+        IPeriodVariables<I> InPeriod(string caption);
+        IPeriodVariables<I> InConstants();      
     }
 
     /// <summary>
     /// EndGroup может быть вызвана только после завершения периода или получения summary для периода
     /// или вызываем любой другой метод из IDefinePeriod
     /// </summary>
-    public interface IEndGroupOrDefinePeriod : IDefinePeriod
+    public interface IEndGroupOrDefinePeriod<I> : IDefinePeriod<I>
     {
-        IDefineGroup EndGroup();
+        IDefineGroup<I> EndGroup();
     }
 }

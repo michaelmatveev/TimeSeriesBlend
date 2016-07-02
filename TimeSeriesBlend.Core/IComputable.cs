@@ -22,9 +22,9 @@ namespace TimeSeriesBlend.Core
         public Exception Exception { get; internal set; }
     }
 
-    public interface IComputable
+    public interface IComputable<I>
     {
-        void Compute(ComputationParameters parameters);
+        void Compute(ComputationParameters<I> parameters);
 
         event EventHandler<ProgressArgs> OnProgress;
         event EventHandler<ComputationArgs> OnComputationStart;

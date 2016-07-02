@@ -12,7 +12,7 @@ namespace TimeSeriesBlend.UnitTests
         public void FindMaxTemperature()
         {
             var vh = new TempPress();
-            var volumeCalculator = new SeriesConnector<TempPress>(vh);        
+            var volumeCalculator = new DateTimeSeriesConnector<TempPress>(vh);        
 
             volumeCalculator
                 .BeginPeriod("Temperature-Hours", StandardPeriods.Hour)
@@ -31,8 +31,8 @@ namespace TimeSeriesBlend.UnitTests
                     .End()                    
                .EndPeriod();
 
-            var c = SeriesConnector<TempPress>.Compile(volumeCalculator);
-            c.Compute(new ComputationParameters
+            var c = DateTimeSeriesConnector<TempPress>.Compile(volumeCalculator);
+            c.Compute(new ComputationParameters<DateTime>
             {
                 From = new DateTime(2000, 01, 01),
                 Till = new DateTime(2000, 01, 02)

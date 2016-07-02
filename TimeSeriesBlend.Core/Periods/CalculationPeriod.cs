@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace TimeSeriesBlend.Core.Periods
 {
-    internal class CalculationPeriod
+    internal class CalculationPeriod<I>
     {
         public string Name { get; set; }
 
@@ -16,18 +16,18 @@ namespace TimeSeriesBlend.Core.Periods
         /// Функция, которая используется для вычисления следующего интервала времени 
         /// </summary>
         /// <returns></returns>
-        public Func<DateTime, DateTime> GetNextPeriod { get; set; }
+        public Func<I, I> GetNextPeriod { get; set; }
 
-        protected readonly IList<DateTime> _periods;
+        protected readonly IList<I> _periods;
 
-        public IEnumerable<DateTime> Periods
+        public IEnumerable<I> Periods
         {
             get { return _periods; }
         }
 
         public CalculationPeriod()
         {
-            _periods = new List<DateTime>();
+            _periods = new List<I>();
         }
 
         /// <summary>
@@ -35,12 +35,12 @@ namespace TimeSeriesBlend.Core.Periods
         /// </summary>
         /// <param name="from">Начальный момент времени с которого начинается отсчет периода</param>
         /// <param name="till">Момент времени следюущий после последнего периода</param>
-        public virtual void GeneratePeriods(DateTime from, DateTime till)
+        public virtual void GeneratePeriods(I from, I till)
         {
             Debug.Assert(!_periods.Any());
             CheckInputInterval(from, till);
 
-            while (from < till)
+            while (Operator.LessThan(from, till))
             {
                 _periods.Add(from);
                 from = GetNextPeriod(from);
@@ -53,21 +53,21 @@ namespace TimeSeriesBlend.Core.Periods
         /// <param name="from"></param>
         /// <param name="till"></param>
         /// <returns></returns>
-        public IEnumerable<DateTime> Between(DateTime from, DateTime till)
+        public IEnumerable<I> Between(I from, I till)
         {
             CheckPeriods();            
-            if (till == default(DateTime))
+            if (Operator.Equal(till, default(I)))
             {
-                return _periods.Where(t => t >= from);
+                return _periods.Where(t => Operator.GreaterThanOrEqual(t, from));
             }
 
             CheckInputInterval(from, till);
-            return _periods.Where(t => t >= from && t < till);
+            return _periods.Where(t => Operator.GreaterThanOrEqual(t, from) && Operator.LessThan(t, till));
         }
 
-        private void CheckInputInterval(DateTime from, DateTime till)
+        private void CheckInputInterval(I from, I till)
         {
-            if (from > till)
+            if (Operator.GreaterThan(from, till))
             {
                 var exMessage = $"\"till\" parameter value = {till} must be greather then value of \"from\" patmater = {from}.";
                 throw new ArgumentException(exMessage, "till");

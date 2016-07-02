@@ -11,7 +11,7 @@ namespace TimeSeriesBlend.Core.MetaVariables
         Compiled
     }
 
-    internal abstract class MetaVariable<H>
+    internal abstract class MetaVariable<H, I>
     {
         public string Name { get; set; }
 
@@ -19,15 +19,15 @@ namespace TimeSeriesBlend.Core.MetaVariables
         /// Список переменных, которые должны быть вычислены перед вычислением данной переменной
         /// Этот список заполняется на этапе компиляции выражения
         /// </summary>
-        public List<MetaVariable<H>> DependsOn { get; set; }
+        public List<MetaVariable<H, I>> DependsOn { get; set; }
 
-        public CalculationPeriod Period { get; set; }
+        public CalculationPeriod<I> Period { get; set; }
 
         public GroupOfVariables Group { get; set; }
 
         public bool RequiredCalculation { get; set; }
 
-        public IList<Action<TimeArg>> Readers { get; set; }
+        public IList<Action<TimeArg<I>>> Readers { get; set; }
 
         /// <summary>
         /// Свойство из holder связанное с данной мета-переменной
@@ -40,12 +40,12 @@ namespace TimeSeriesBlend.Core.MetaVariables
 
         public MetaVariable()
         {
-            DependsOn = new List<MetaVariable<H>>();
+            DependsOn = new List<MetaVariable<H, I>>();
             State = CompilationState.NotCompiled;
-            Readers = new List<Action<TimeArg>>();
+            Readers = new List<Action<TimeArg<I>>>();
         }
 
-        protected void ExecuteAllReaders(TimeArg arg)
+        protected void ExecuteAllReaders(TimeArg<I> arg)
         {
             foreach (var reader in Readers)
             {
@@ -57,7 +57,7 @@ namespace TimeSeriesBlend.Core.MetaVariables
         {
         }
 
-        protected abstract void FindDependentVariables(IEnumerable<MetaVariable<H>> allVariables);
+        protected abstract void FindDependentVariables(IEnumerable<MetaVariable<H, I>> allVariables);
 
         protected virtual void CompileInternal()
         {
@@ -67,7 +67,7 @@ namespace TimeSeriesBlend.Core.MetaVariables
         /// Проверить состояние переменной, найти зависимые пеменные, скомпилировать при необходимости
         /// </summary>
         /// <param name="allVariables"></param>
-        public void Compile(IEnumerable<MetaVariable<H>> allVariables)
+        public void Compile(IEnumerable<MetaVariable<H, I>> allVariables)
         {
             ValidateVariable();
             FindDependentVariables(allVariables);
@@ -88,7 +88,7 @@ namespace TimeSeriesBlend.Core.MetaVariables
 
         public abstract void EvaluateInternal(H holder, MemberInfo groupMember);
 
-        public virtual void ApplyValueForHolder(H holder, TimeArg tp)
+        public virtual void ApplyValueForHolder(H holder, TimeArg<I> tp)
         {
         }
     }

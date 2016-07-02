@@ -5,28 +5,28 @@ using System.Reflection;
 
 namespace TimeSeriesBlend.Core.MetaVariables
 {
-    internal class ShiftedVaraible<H, T> : CalculatedVariable<H, T>
+    internal class ShiftedVaraible<H, T, I> : CalculatedVariable<H, T, I>
     {
         public PropertyInfo BasedOnMetaProperty { get; set; }
         public Int32 Shift { get; set; }
-        public Func<TimeArg, T> EmptyFiller { get; set; }
+        public Func<TimeArg<I>, T> EmptyFiller { get; set; }
 
         public override void EvaluateInternal(H holder, MemberInfo groupKey)
         {
             // вычисляем переменную из котрой следует получить значения
-            CalculatedVariable<H, T> basedVar = (CalculatedVariable<H, T>)DependsOn.Single();
+            CalculatedVariable<H, T, I> basedVar = (CalculatedVariable<H, T, I>)DependsOn.Single();
 
             // check basedVar.Period == this.Period; (они должны совпадать)
             basedVar.Evaluate(holder, groupKey, LastMoniker);
 
-            var periods = Period.Periods.Select((t, i) => new TimeArg(t, i, groupKey, Period.Name, this.Name));
+            var periods = Period.Periods.Select((t, i) => new TimeArg<I>(t, i, groupKey, Period.Name, this.Name));
             if (Shift >= 0)
             {
                 ShiftData(basedVar, periods, Shift);
             }
             else
             {
-                var p2 = Period.Periods.Reverse().Select((t, i) => new TimeArg(t, i, groupKey, Period.Name, this.Name));
+                var p2 = Period.Periods.Reverse().Select((t, i) => new TimeArg<I>(t, i, groupKey, Period.Name, this.Name));
                 ShiftData(basedVar, p2, -Shift);
             }
 
@@ -40,9 +40,9 @@ namespace TimeSeriesBlend.Core.MetaVariables
             }
         }
 
-        private void ShiftData(CalculatedVariable<H, T> basedVar, IEnumerable<TimeArg> periods, Int32 shift)
+        private void ShiftData(CalculatedVariable<H, T, I> basedVar, IEnumerable<TimeArg<I>> periods, Int32 shift)
         {
-            Dictionary<TimeArg, T> temp = new Dictionary<TimeArg, T>();
+            Dictionary<TimeArg<I>, T> temp = new Dictionary<TimeArg<I>, T>();
             Queue<T> buffer = new Queue<T>(shift);
             T result;
             foreach (var tp in periods)
@@ -68,7 +68,7 @@ namespace TimeSeriesBlend.Core.MetaVariables
             }
         }
 
-        protected override void FindDependentVariables(IEnumerable<MetaVariable<H>> allVariables)
+        protected override void FindDependentVariables(IEnumerable<MetaVariable<H, I>> allVariables)
         {
             DependsOn.Add(allVariables.Single(d => d.MetaProperty == this.BasedOnMetaProperty));
         }

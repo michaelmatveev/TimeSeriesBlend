@@ -2,13 +2,13 @@
 
 namespace TimeSeriesBlend.Core.Grammar
 {
-    public interface IPeriodVariableReader
+    public interface IPeriodVariableReader<I>
     {
-        IPeriodVariableReader Read(Action reader);
-        IPeriodVariableReader Read(Action<DateTime> reader);
-        IPeriodVariableReader Read(Action<DateTime, int> reader);
-        IPeriodVariableReader Read(Action<TimeArg> reader);
+        IPeriodVariableReader<I> Read(Action reader);
+        IPeriodVariableReader<I> Read(Action<I> reader);
+        IPeriodVariableReader<I> Read(Action<I, int> reader);
+        IPeriodVariableReader<I> Read(Action<TimeArg<I>> reader);
 
-        IPeriodVariables End();
+        IPeriodVariables<I> End();
     }
 }

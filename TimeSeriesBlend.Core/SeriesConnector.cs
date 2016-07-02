@@ -10,14 +10,14 @@ using TimeSeriesBlend.Core.Periods;
 
 namespace TimeSeriesBlend.Core
 {
-    public sealed class SeriesConnector<H> : 
-        IDefineGroup, 
-        IDefinePeriod,
-        IPeriodVariables,           // should be implemented explicitly
-        IEndGroupOrDefinePeriod,    // should be implemented explicitly
-        IPeriodVariableAssigment,   // should be implemented explicitly
-        IPeriodVariableReader,      // should be implemented explicitly
-        IComputable                 // should be implemented explicitly     
+    public class SeriesConnector<H, I> : 
+        IDefineGroup<I>, 
+        IDefinePeriod<I>,
+        IPeriodVariables<I>,           // should be implemented explicitly
+        IEndGroupOrDefinePeriod<I>,    // should be implemented explicitly
+        IPeriodVariableAssigment<I>,   // should be implemented explicitly
+        IPeriodVariableReader<I>,      // should be implemented explicitly
+        IComputable<I>                 // should be implemented explicitly     
     {
         #region Initialization 
 
@@ -31,7 +31,7 @@ namespace TimeSeriesBlend.Core
         public SeriesConnector(H holder)
         {
             _propertyHolder = holder;
-            _currentPeriod = _constantPeriod = new ConstantPeriod();
+            _currentPeriod = _constantPeriod = new ConstantPeriod<I>();
             _periodHolders.Add(_constantPeriod);
 
             var defaultGroup = new GroupOfVariables
@@ -48,36 +48,36 @@ namespace TimeSeriesBlend.Core
 
         #region Period definitions
 
-        private ConstantPeriod _constantPeriod;
-        private CalculationPeriod _currentPeriod;
-        private readonly List<CalculationPeriod> _periodHolders = new List<CalculationPeriod>();
+        private ConstantPeriod<I> _constantPeriod;
+        private CalculationPeriod<I> _currentPeriod;
+        private readonly List<CalculationPeriod<I>> _periodHolders = new List<CalculationPeriod<I>>();
 
-        public IPeriodVariables BeginPeriod(Func<DateTime, DateTime> getNextPeriod)
+        public IPeriodVariables<I> BeginPeriod(Func<I, I> getNextPeriod)
         {
-            return (this as IEndGroupOrDefinePeriod).BeginPeriod(getNextPeriod);
+            return (this as IEndGroupOrDefinePeriod<I>).BeginPeriod(getNextPeriod);
         }
 
-        public IPeriodVariables BeginPeriod(string caption, Func<DateTime, DateTime> getNextPeriod)
+        public IPeriodVariables<I> BeginPeriod(string caption, Func<I, I> getNextPeriod)
         {
-            return (this as IEndGroupOrDefinePeriod).BeginPeriod(caption, getNextPeriod);
+            return (this as IEndGroupOrDefinePeriod<I>).BeginPeriod(caption, getNextPeriod);
         }
 
-        public IPeriodVariables InPeriod(string caption)
+        public IPeriodVariables<I> InPeriod(string caption)
         {
-            return (this as IEndGroupOrDefinePeriod).InPeriod(caption);
+            return (this as IEndGroupOrDefinePeriod<I>).InPeriod(caption);
         }
 
-        public IPeriodVariables InConstants()
+        public IPeriodVariables<I> InConstants()
         {
-            return (this as IEndGroupOrDefinePeriod).InConstants();
+            return (this as IEndGroupOrDefinePeriod<I>).InConstants();
         } 
 
-        IPeriodVariables IDefinePeriod.BeginPeriod(Func<DateTime, DateTime> getNextPeriod)
+        IPeriodVariables<I> IDefinePeriod<I>.BeginPeriod(Func<I, I> getNextPeriod)
         {
-            return (this as IEndGroupOrDefinePeriod).BeginPeriod(null, getNextPeriod);
+            return (this as IEndGroupOrDefinePeriod<I>).BeginPeriod(null, getNextPeriod);
         }
 
-        IPeriodVariables IDefinePeriod.BeginPeriod(string caption, Func<DateTime, DateTime> getNextPeriod)
+        IPeriodVariables<I> IDefinePeriod<I>.BeginPeriod(string caption, Func<I, I> getNextPeriod)
         {
             _currentPeriod = _periodHolders
                 .Where(p => p.WithinGroup == _currentGroup)
@@ -88,7 +88,7 @@ namespace TimeSeriesBlend.Core
 
             if (_currentPeriod == null)
             {
-                _currentPeriod = new CalculationPeriod
+                _currentPeriod = new CalculationPeriod<I>
                 {
                     Name = caption,
                     GetNextPeriod = getNextPeriod,
@@ -100,7 +100,7 @@ namespace TimeSeriesBlend.Core
             return this;
         }
 
-        IPeriodVariables IDefinePeriod.InPeriod(string caption)
+        IPeriodVariables<I> IDefinePeriod<I>.InPeriod(string caption)
         {
             _currentPeriod = _periodHolders
                .Where(p => p.WithinGroup == _currentGroup)
@@ -109,18 +109,18 @@ namespace TimeSeriesBlend.Core
             return this;
         }
 
-        IPeriodVariables IDefinePeriod.InConstants()
+        IPeriodVariables<I> IDefinePeriod<I>.InConstants()
         {
             _currentPeriod = _constantPeriod;
             return this;
         }
 
-        IEndGroupOrDefinePeriod IPeriodVariables.EndPeriod()
+        IEndGroupOrDefinePeriod<I> IPeriodVariables<I>.EndPeriod()
         {
             return this;
         }
 
-        IDefineGroup IEndGroupOrDefinePeriod.EndGroup()
+        IDefineGroup<I> IEndGroupOrDefinePeriod<I>.EndGroup()
         {
             return this;
         }
@@ -132,7 +132,7 @@ namespace TimeSeriesBlend.Core
         private GroupOfVariables _currentGroup;
         private readonly IList<GroupOfVariables> _Groups = new List<GroupOfVariables>();
 
-        public IDefinePeriod BeginGroup(string caption, Func<object, IEnumerable> members)
+        public IDefinePeriod<I> BeginGroup(string caption, Func<object, IEnumerable> members)
         {
             var newGroup = new GroupOfVariables
             {
@@ -148,7 +148,7 @@ namespace TimeSeriesBlend.Core
             return this;
         }
 
-        public IDefinePeriod BeginGroup(string caption, Func<IEnumerable> members)
+        public IDefinePeriod<I> BeginGroup(string caption, Func<IEnumerable> members)
         {
             var newGroup = new GroupOfVariables
             {
@@ -170,7 +170,7 @@ namespace TimeSeriesBlend.Core
 
         private string _currentVariableName;
         private PropertyInfo _currentPropertyInfo;
-        private IList<MetaVariable<H>> _variables = new List<MetaVariable<H>>();
+        private IList<MetaVariable<H, I>> _variables = new List<MetaVariable<H, I>>();
 
         /// <summary>
         /// Объявляет простую переменную
@@ -178,12 +178,12 @@ namespace TimeSeriesBlend.Core
         /// <typeparam name="T"></typeparam>
         /// <param name="metaVar"></param>
         /// <returns></returns>
-        IPeriodVariableAssigment IPeriodVariables.Let<T>(Expression<Func<T>> metaVar)
+        IPeriodVariableAssigment<I> IPeriodVariables<I>.Let<T>(Expression<Func<T>> metaVar)
         {            
-            return (this as IPeriodVariables).Let(string.Empty, metaVar);
+            return (this as IPeriodVariables<I>).Let(string.Empty, metaVar);
         }
 
-        IPeriodVariableAssigment IPeriodVariables.Let<T>(string name, Expression<Func<T>> metaVar)
+        IPeriodVariableAssigment<I> IPeriodVariables<I>.Let<T>(string name, Expression<Func<T>> metaVar)
         {
             var me = metaVar.Body as MemberExpression;
             _currentPropertyInfo = me.Member as PropertyInfo;
@@ -196,9 +196,9 @@ namespace TimeSeriesBlend.Core
 
         #region Sliced variable declaring
 
-        IPeriodVariableAssigment IPeriodVariables.Let<T>(Expression<Func<IList<T>>> metaVar, Expression<Func<T>> basedOn)
+        IPeriodVariableAssigment<I> IPeriodVariables<I>.Let<T>(Expression<Func<IList<T>>> metaVar, Expression<Func<T>> basedOn)
         {
-            return (this as IPeriodVariables).Let(string.Empty, metaVar, basedOn);
+            return (this as IPeriodVariables<I>).Let(string.Empty, metaVar, basedOn);
         }
 
         /// <summary>
@@ -209,14 +209,14 @@ namespace TimeSeriesBlend.Core
         /// <param name="metaVar"></param>
         /// <param name="basedOn"></param>
         /// <returns></returns>
-        IPeriodVariableAssigment IPeriodVariables.Let<T>(string name, Expression<Func<IList<T>>> metaVar, Expression<Func<T>> basedOn)
+        IPeriodVariableAssigment<I> IPeriodVariables<I>.Let<T>(string name, Expression<Func<IList<T>>> metaVar, Expression<Func<T>> basedOn)
         {
-            (this as IPeriodVariables).Let(name, metaVar);
+            (this as IPeriodVariables<I>).Let(name, metaVar);
 
             MemberExpression me = basedOn.Body as MemberExpression;
             PropertyInfo baseProperty = me.Member as PropertyInfo;
 
-            _variables.Add(new SlicedVariable<H, T>
+            _variables.Add(new SlicedVariable<H, T, I>
             {
                 Period = _currentPeriod,
                 Group = _currentGroup,
@@ -232,19 +232,19 @@ namespace TimeSeriesBlend.Core
 
         #region Cross group variable declaring
 
-        IPeriodVariableAssigment IPeriodVariables.Let<K, T>(Expression<Func<IDictionary<K, T>>> metaVar, Expression<Func<T>> basedOn)
+        IPeriodVariableAssigment<I> IPeriodVariables<I>.Let<K, T>(Expression<Func<IDictionary<K, T>>> metaVar, Expression<Func<T>> basedOn)
         {            
-            return (this as IPeriodVariables).Let(String.Empty, metaVar, basedOn);
+            return (this as IPeriodVariables<I>).Let(String.Empty, metaVar, basedOn);
         }
 
-        IPeriodVariableAssigment IPeriodVariables.Let<K, T>(string name, Expression<Func<IDictionary<K, T>>> metaVar, Expression<Func<T>> basedOn)
+        IPeriodVariableAssigment<I> IPeriodVariables<I>.Let<K, T>(string name, Expression<Func<IDictionary<K, T>>> metaVar, Expression<Func<T>> basedOn)
         {
-            (this as IPeriodVariables).Let(name, metaVar);
+            (this as IPeriodVariables<I>).Let(name, metaVar);
 
             MemberExpression me = basedOn.Body as MemberExpression;
             PropertyInfo baseProperty = me.Member as PropertyInfo;
 
-            _variables.Add(new CrossGroupVariable<H, K, T>
+            _variables.Add(new CrossGroupVariable<H, K, T, I>
             {
                 Period = _currentPeriod,
                 Group = _currentGroup,
@@ -260,36 +260,36 @@ namespace TimeSeriesBlend.Core
 
         #region Shifted vars assign
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<T>> basedOn, int shift)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<T>> basedOn, int shift)
         {
-            Func<TimeArg, T> wrap = tp => default(T);
-            return (this as IPeriodVariableAssigment).Assign(basedOn, shift, wrap);
+            Func<TimeArg<I>, T> wrap = tp => default(T);
+            return (this as IPeriodVariableAssigment<I>).Assign(basedOn, shift, wrap);
         }
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<T> emptyFiller)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<T> emptyFiller)
         {
-            Func<TimeArg, T> wrap = tp => emptyFiller();
-            return (this as IPeriodVariableAssigment).Assign(basedOn, shift, wrap);
+            Func<TimeArg<I>, T> wrap = tp => emptyFiller();
+            return (this as IPeriodVariableAssigment<I>).Assign(basedOn, shift, wrap);
         }
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<DateTime, T> emptyFiller)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<I, T> emptyFiller)
         {
-            Func<TimeArg, T> wrap = tp => emptyFiller(tp.T);
-            return (this as IPeriodVariableAssigment).Assign(basedOn, shift, wrap);
+            Func<TimeArg<I>, T> wrap = tp => emptyFiller(tp.T);
+            return (this as IPeriodVariableAssigment<I>).Assign(basedOn, shift, wrap);
         }
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<DateTime, Int32, T> emptyFiller)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<I, Int32, T> emptyFiller)
         {
-            Func<TimeArg, T> wrap = tp => emptyFiller(tp.T, tp.I);
-            return (this as IPeriodVariableAssigment).Assign(basedOn, shift, wrap);
+            Func<TimeArg<I>, T> wrap = tp => emptyFiller(tp.T, tp.I);
+            return (this as IPeriodVariableAssigment<I>).Assign(basedOn, shift, wrap);
         }
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<TimeArg, T> emptyFiller)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<T>> basedOn, int shift, Func<TimeArg<I>, T> emptyFiller)
         {
             MemberExpression me = basedOn.Body as MemberExpression;
             PropertyInfo baseProperty = me.Member as PropertyInfo;
 
-            var variable = new ShiftedVaraible<H, T>
+            var variable = new ShiftedVaraible<H, T, I>
             {
                 Period = _currentPeriod,
                 Group = _currentGroup,
@@ -311,24 +311,24 @@ namespace TimeSeriesBlend.Core
         
         #region Calculated value assign
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<T>> writer)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<T>> writer)
         {
-            return (this as IPeriodVariableAssigment).Assign<T>(ExpressionsBuilder.ConvertExpression<T>(writer));
+            return (this as IPeriodVariableAssigment<I>).Assign<T>(ExpressionsBuilder<I>.ConvertExpression<T>(writer));
         }
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<DateTime, T>> writer)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<I, T>> writer)
         {
-            return (this as IPeriodVariableAssigment).Assign<T>(ExpressionsBuilder.ConvertExpression<T>(writer));
+            return (this as IPeriodVariableAssigment<I>).Assign<T>(ExpressionsBuilder<I>.ConvertExpression<T>(writer));
         }
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<DateTime, int, T>> writer)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<I, int, T>> writer)
         {
-            return (this as IPeriodVariableAssigment).Assign<T>(ExpressionsBuilder.ConvertExpression<T>(writer));
+            return (this as IPeriodVariableAssigment<I>).Assign<T>(ExpressionsBuilder<I>.ConvertExpression<T>(writer));
         }
 
-        IPeriodVariableReader IPeriodVariableAssigment.Assign<T>(Expression<Func<TimeArg, T>> writer)
+        IPeriodVariableReader<I> IPeriodVariableAssigment<I>.Assign<T>(Expression<Func<TimeArg<I>, T>> writer)
         {
-            var variable = new CalculatedVariable<H, T>
+            var variable = new CalculatedVariable<H, T, I>
             {
                 Period = _currentPeriod,
                 Group = _currentGroup,
@@ -348,28 +348,28 @@ namespace TimeSeriesBlend.Core
 
         #region Read data after calc
 
-        IPeriodVariableReader IPeriodVariableReader.Read(Action reader)
+        IPeriodVariableReader<I> IPeriodVariableReader<I>.Read(Action reader)
         {
-            return (this as IPeriodVariableReader).Read((TimeArg tp) => reader());
+            return (this as IPeriodVariableReader<I>).Read((TimeArg<I> tp) => reader());
         }
 
-        IPeriodVariableReader IPeriodVariableReader.Read(Action<DateTime> reader)
+        IPeriodVariableReader<I> IPeriodVariableReader<I>.Read(Action<I> reader)
         {
-            return (this as IPeriodVariableReader).Read(tp => reader(tp.T));
+            return (this as IPeriodVariableReader<I>).Read(tp => reader(tp.T));
         }
 
-        IPeriodVariableReader IPeriodVariableReader.Read(Action<DateTime, int> reader)
+        IPeriodVariableReader<I> IPeriodVariableReader<I>.Read(Action<I, int> reader)
         {
-            return (this as IPeriodVariableReader).Read(tp => reader(tp.T, tp.I));
+            return (this as IPeriodVariableReader<I>).Read(tp => reader(tp.T, tp.I));
         }
 
-        IPeriodVariableReader IPeriodVariableReader.Read(Action<TimeArg> reader)
+        IPeriodVariableReader<I> IPeriodVariableReader<I>.Read(Action<TimeArg<I>> reader)
         {
             _variables.Last().Readers.Add(reader);
             return this;
         }
 
-        IPeriodVariables IPeriodVariableReader.End()
+        IPeriodVariables<I> IPeriodVariableReader<I>.End()
         {
             return this;
         }
@@ -378,19 +378,19 @@ namespace TimeSeriesBlend.Core
 
         #region Summary
 
-        IEndGroupOrDefinePeriod IPeriodVariables.Summarize(Action<DateTime> action)
+        IEndGroupOrDefinePeriod<I> IPeriodVariables<I>.Summarize(Action<I> action)
         {
-            return (this as IPeriodVariables).Summarize(tp => action(tp.T));
+            return (this as IPeriodVariables<I>).Summarize(tp => action(tp.T));
         }
 
-        IEndGroupOrDefinePeriod IPeriodVariables.Summarize(Action<DateTime, Int32> action)
+        IEndGroupOrDefinePeriod<I> IPeriodVariables<I>.Summarize(Action<I, Int32> action)
         {
-            return (this as IPeriodVariables).Summarize(tp => action(tp.T, tp.I));
+            return (this as IPeriodVariables<I>).Summarize(tp => action(tp.T, tp.I));
         }
 
-        IEndGroupOrDefinePeriod IPeriodVariables.Summarize(Action<TimeArg> action)
+        IEndGroupOrDefinePeriod<I> IPeriodVariables<I>.Summarize(Action<TimeArg<I>> action)
         {
-            _variables.Add(new SummarizeVariable<H>(action)
+            _variables.Add(new SummarizeVariable<H, I>(action)
             {
                 Name = $"summary for {_currentPeriod.Name ?? "unnamed"} period",
                 Period = _currentPeriod,
@@ -404,9 +404,9 @@ namespace TimeSeriesBlend.Core
 
         #region Compilation
 
-        public static IComputable Compile(SeriesConnector<H> source)
+        public static IComputable<I> Compile(SeriesConnector<H, I> source)
         {
-            foreach (MetaVariable<H> v in source._variables)
+            foreach (MetaVariable<H, I> v in source._variables)
             {
                 v.Compile(source._variables);
             }
@@ -417,9 +417,9 @@ namespace TimeSeriesBlend.Core
 
         #region Execution
 
-        void IComputable.Compute(ComputationParameters parameters)
+        void IComputable<I>.Compute(ComputationParameters<I> parameters)
         {
-            IEnumerable<MetaVariable<H>> varsToCompute;
+            IEnumerable<MetaVariable<H, I>> varsToCompute;
             if (parameters.VariablesToCompute != null)
             {
                 varsToCompute = _variables.Where(v => parameters.VariablesToCompute.Contains(v.Name));
@@ -456,7 +456,7 @@ namespace TimeSeriesBlend.Core
             }
         }
 
-        event EventHandler<ProgressArgs> IComputable.OnProgress
+        event EventHandler<ProgressArgs> IComputable<I>.OnProgress
         {
             add
             {
@@ -475,7 +475,7 @@ namespace TimeSeriesBlend.Core
             }
         }
 
-        event EventHandler<ComputationArgs> IComputable.OnComputationStart
+        event EventHandler<ComputationArgs> IComputable<I>.OnComputationStart
         {
             add
             {
@@ -494,7 +494,7 @@ namespace TimeSeriesBlend.Core
             }
         }
 
-        event EventHandler<ComputationArgs> IComputable.OnComputationFinish
+        event EventHandler<ComputationArgs> IComputable<I>.OnComputationFinish
         {
             add
             {
@@ -513,7 +513,7 @@ namespace TimeSeriesBlend.Core
             }
         }
 
-        event EventHandler<ComputationErrorArgs> IComputable.OnComputationError
+        event EventHandler<ComputationErrorArgs> IComputable<I>.OnComputationError
         {
             add
             {
@@ -584,7 +584,7 @@ namespace TimeSeriesBlend.Core
             });
         }
 
-        private void MarkVariablesToCompute(IEnumerable<MetaVariable<H>> input)
+        private void MarkVariablesToCompute(IEnumerable<MetaVariable<H, I>> input)
         {
             foreach (var v in input)
             {
@@ -593,7 +593,7 @@ namespace TimeSeriesBlend.Core
             }
         }
 
-        private IEnumerable<MetaVariable<H>> MarkedVariables
+        private IEnumerable<MetaVariable<H, I>> MarkedVariables
         {
             get
             {
@@ -637,7 +637,7 @@ namespace TimeSeriesBlend.Core
                     {
                         var moniker = Guid.NewGuid(); // moniker генерируется для каждого нового объекта из группы
 
-                        foreach (MetaVariable<H> v in variablesInGroup)
+                        foreach (MetaVariable<H, I> v in variablesInGroup)
                         {
                             v.Evaluate(_propertyHolder, member, moniker);
                             if (OnProgressHandler(v.Name, group.Name, upperBound, ++current))

@@ -3,17 +3,17 @@ using System.Diagnostics;
 
 namespace TimeSeriesBlend.Core.Periods
 {
-    internal class ConstantPeriod : CalculationPeriod
+    internal class ConstantPeriod<I> : CalculationPeriod<I>
     {
         /// <summary>
         /// Константный период должен содержать только одно значение
         /// </summary>
         /// <param name="from"></param>
         /// <param name="till"></param>
-        public override void GeneratePeriods(DateTime from, DateTime till)
+        public override void GeneratePeriods(I from, I till)
         {
             Debug.Assert(_periods.Count == 0);
-            _periods.Add(new DateTime());
+            _periods.Add(default(I));
         }
 
     }

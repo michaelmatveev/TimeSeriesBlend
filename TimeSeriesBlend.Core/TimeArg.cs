@@ -6,15 +6,15 @@ namespace TimeSeriesBlend.Core
     /// <summary>
     /// Аргумент временного ряда
     /// </summary>
-    public struct TimeArg
+    public struct TimeArg<TI>
     {
-        public DateTime T { get; private set; }
+        public TI T { get; private set; }
         public int I { get; private set; }
         public MemberInfo ForGroupMember { get; private set; }
         public string CurrentPeriodName { get; private set; }
         public string CurrentVariableName { get; private set; }
         
-        public TimeArg(DateTime t, int i, MemberInfo member, string periodName, string variableName)
+        public TimeArg(TI t, int i, MemberInfo member, string periodName, string variableName)
         {
             T = t;
             I = i;
@@ -36,21 +36,21 @@ namespace TimeSeriesBlend.Core
     /// <summary>
     /// Временные аргументы должны различаться только временем и ключом группы, все прочие свойства должны игнорироваться при сравнении
     /// </summary>
-    internal class TimeArgsComparer : IEqualityComparer<TimeArg>
+    internal class TimeArgsComparer<I> : IEqualityComparer<TimeArg<I>>
     {
         static TimeArgsComparer()
         {
-            Instance = new TimeArgsComparer();
+            Instance = new TimeArgsComparer<I>();
         }
 
-        public static TimeArgsComparer Instance { get; private set; }
+        public static TimeArgsComparer<I> Instance { get; private set; }
         
-        public bool Equals(TimeArg x, TimeArg y)
+        public bool Equals(TimeArg<I> x, TimeArg<I> y)
         {
-            return (x.T == y.T) && (x.ForGroupMember == y.ForGroupMember);
+            return Operator.Equal(x.T, y.T) && (x.ForGroupMember == y.ForGroupMember);
         }
 
-        public int GetHashCode(TimeArg obj)
+        public int GetHashCode(TimeArg<I> obj)
         {
             if (obj.ForGroupMember == null)
             {
